@@ -2,6 +2,8 @@ import React from 'react';
 import {
   Flame,
   Refrigerator,
+  Package,
+  Snowflake,
   AlertTriangle,
   CheckCircle2,
   ArrowRight,
@@ -11,8 +13,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Check,
-  TrendingDown,
-  Sparkle,
+  Layers,
+  ExternalLink,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import {
@@ -55,13 +57,33 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
   const caloriesRemaining = Math.max(0, nutrition.targetCalories - caloriesConsumed);
   const caloriePercent = Math.min(100, Math.round((caloriesConsumed / nutrition.targetCalories) * 100));
 
-  // 2. Alimenti in scadenza
+  // 2. Alimenti in scadenza e stato scorte
   const today = new Date();
+  const getDaysToExpiry = (dateStr?: string) => {
+    if (!dateStr) return 999;
+    const exp = new Date(dateStr);
+    return Math.ceil((exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
   const expiringItems = pantryItems.filter(item => {
-    if (!item.expiryDate) return false;
-    const diff = Math.ceil((new Date(item.expiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const diff = getDaysToExpiry(item.expiryDate);
     return diff <= 3 && diff >= -1;
   });
+
+  // Metriche approfondite per il Riepilogo Totale della Dispensa
+  const fridgeItems = pantryItems.filter(i => i.location === 'fridge');
+  const pantryOnlyItems = pantryItems.filter(i => i.location === 'pantry');
+  const freezerItems = pantryItems.filter(i => i.location === 'freezer');
+
+  const totalPantryValue = pantryItems.reduce((acc, item) => acc + (item.estimatedPrice || 2.2), 0);
+
+  // Ripartizione categorie
+  const countMeatFish = pantryItems.filter(i => ['carne', 'pesce'].includes(i.category)).length;
+  const countVegFruit = pantryItems.filter(i => ['verdure', 'frutta'].includes(i.category)).length;
+  const countDairyEggs = pantryItems.filter(i => ['latticini', 'uova'].includes(i.category)).length;
+  const countGrains = pantryItems.filter(i => ['cereali_pasta', 'pane_prodotti_forno'].includes(i.category)).length;
+  const countLegumes = pantryItems.filter(i => i.category === 'legumi').length;
+  const countCondiments = pantryItems.filter(i => ['condimenti', 'snack_dolci', 'bevande', 'altro'].includes(i.category)).length;
 
   // 3. Copertura ricette pianificate per la settimana
   let totalWeekIngredientsCount = 0;
@@ -214,7 +236,7 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           </div>
 
           <div className="space-y-3.5 my-auto">
-            {/* Proteine - Soft Blue */}
+            {/* Proteine */}
             <div className="p-2.5 rounded-xl bg-pastel-blue-bg/60 border border-pastel-blue-border/60">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-bold text-pastel-blue-text flex items-center space-x-1.5">
@@ -233,7 +255,7 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
               </div>
             </div>
 
-            {/* Carboidrati - Soft Emerald */}
+            {/* Carboidrati */}
             <div className="p-2.5 rounded-xl bg-pastel-emerald-bg/60 border border-pastel-emerald-border/60">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-bold text-pastel-emerald-text flex items-center space-x-1.5">
@@ -252,7 +274,7 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
               </div>
             </div>
 
-            {/* Grassi - Soft Amber */}
+            {/* Grassi */}
             <div className="p-2.5 rounded-xl bg-pastel-amber-bg/60 border border-pastel-amber-border/60">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-bold text-pastel-amber-text flex items-center space-x-1.5">
@@ -271,7 +293,7 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
               </div>
             </div>
 
-            {/* Fibre - Soft Purple */}
+            {/* Fibre */}
             <div className="p-2.5 rounded-xl bg-pastel-purple-bg/60 border border-pastel-purple-border/60">
               <div className="flex items-center justify-between text-xs mb-1">
                 <span className="font-bold text-pastel-purple-text flex items-center space-x-1.5">
@@ -366,7 +388,6 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
 
       {/* 4 Soft Metric Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        {/* Metric 1 */}
         <div
           onClick={() => setActiveView('pantry')}
           className="p-4 bg-white rounded-2xl border border-stone-200/60 shadow-soft-xs hover:border-sage-300 transition-all cursor-pointer group"
@@ -381,7 +402,6 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           <p className="text-[10px] text-stone-600 font-medium mt-0.5">alimenti registrati</p>
         </div>
 
-        {/* Metric 2 */}
         <div
           onClick={() => setActiveView('pantry')}
           className={`p-4 rounded-2xl border shadow-soft-xs transition-all cursor-pointer group ${
@@ -402,7 +422,6 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           <p className="text-[10px] text-stone-600 font-medium mt-0.5">entro 3 giorni</p>
         </div>
 
-        {/* Metric 3 */}
         <div
           onClick={() => setActiveView('mealplanner')}
           className="p-4 bg-white rounded-2xl border border-stone-200/60 shadow-soft-xs hover:border-sage-300 transition-all cursor-pointer group"
@@ -417,7 +436,6 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           <p className="text-[10px] text-stone-600 font-medium mt-0.5">ingredienti già pronti</p>
         </div>
 
-        {/* Metric 4 */}
         <div
           onClick={() => setActiveView('grocery')}
           className="p-4 bg-white rounded-2xl border border-stone-200/60 shadow-soft-xs hover:border-sage-300 transition-all cursor-pointer group"
@@ -430,6 +448,223 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           </div>
           <p className="text-xl font-black text-stone-900 mt-2">€24.80</p>
           <p className="text-[10px] text-stone-600 font-medium mt-0.5">solo ingredienti mancanti</p>
+        </div>
+      </div>
+
+      {/* 🌟 RIEPILOGO TOTALE DELLA DISPENSA & SCORTE (NUOVA SEZIONE CHIESTA DALL'UTENTE) */}
+      <div className="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200/60 shadow-soft-sm space-y-5">
+        {/* Header della sezione */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
+          <div>
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 rounded-lg bg-sage-50 text-sage-800 border border-sage-200/60 flex items-center justify-center">
+                <Refrigerator className="w-3.5 h-3.5 text-sage-600" />
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-stone-900">
+                Riepilogo Totale Dispensa & Scorte
+              </h3>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sage-50 text-sage-800 border border-sage-200/60">
+                {pantryItems.length} alimenti a casa
+              </span>
+            </div>
+            <p className="text-xs text-stone-600 font-medium mt-0.5">
+              Panoramica istantanea delle scorte divise per luogo di conservazione, tipologia nutrizionale e stato di freschezza.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onOpenSmartAdd}
+              className="px-3 py-1.5 bg-warm-50 hover:bg-warm-100 text-stone-800 text-xs font-bold rounded-xl border border-stone-200/70 transition-all flex items-center space-x-1.5 shadow-soft-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-sage-600" />
+              <span>Aggiungi Alimenti</span>
+            </button>
+            <button
+              onClick={() => setActiveView('pantry')}
+              className="px-3 py-1.5 bg-sage-50 hover:bg-sage-100 text-sage-800 text-xs font-bold rounded-xl border border-sage-200 transition-all flex items-center space-x-1"
+            >
+              <span>Gestisci Dispensa Completa</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* 1. Collocazioni & Valore Economico Scorte */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* Frigo */}
+          <div
+            onClick={() => setActiveView('pantry')}
+            className="p-3.5 rounded-xl bg-pastel-blue-bg/50 border border-pastel-blue-border/70 hover:border-pastel-blue-border transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pastel-blue-text flex items-center space-x-1">
+                <Refrigerator className="w-3 h-3 text-blue-500" />
+                <span>Nel Frigorifero</span>
+              </span>
+              <span className="text-[10px] font-bold text-blue-600">
+                {Math.round((fridgeItems.length / Math.max(1, pantryItems.length)) * 100)}%
+              </span>
+            </div>
+            <p className="text-xl font-black text-stone-900 mt-1">{fridgeItems.length} <span className="text-xs font-normal text-stone-600">articoli</span></p>
+            <div className="w-full bg-blue-100/70 h-1.5 rounded-full overflow-hidden mt-2">
+              <div
+                className="bg-blue-500 h-full rounded-full"
+                style={{ width: `${(fridgeItems.length / Math.max(1, pantryItems.length)) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Dispensa */}
+          <div
+            onClick={() => setActiveView('pantry')}
+            className="p-3.5 rounded-xl bg-pastel-amber-bg/50 border border-pastel-amber-border/70 hover:border-pastel-amber-border transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pastel-amber-text flex items-center space-x-1">
+                <Package className="w-3 h-3 text-amber-600" />
+                <span>Nella Dispensa</span>
+              </span>
+              <span className="text-[10px] font-bold text-amber-700">
+                {Math.round((pantryOnlyItems.length / Math.max(1, pantryItems.length)) * 100)}%
+              </span>
+            </div>
+            <p className="text-xl font-black text-stone-900 mt-1">{pantryOnlyItems.length} <span className="text-xs font-normal text-stone-600">articoli</span></p>
+            <div className="w-full bg-amber-100/70 h-1.5 rounded-full overflow-hidden mt-2">
+              <div
+                className="bg-amber-500 h-full rounded-full"
+                style={{ width: `${(pantryOnlyItems.length / Math.max(1, pantryItems.length)) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Freezer */}
+          <div
+            onClick={() => setActiveView('pantry')}
+            className="p-3.5 rounded-xl bg-sky-50/60 border border-sky-100 hover:border-sky-200 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 flex items-center space-x-1">
+                <Snowflake className="w-3 h-3 text-sky-500" />
+                <span>Nel Freezer</span>
+              </span>
+              <span className="text-[10px] font-bold text-sky-600">
+                {Math.round((freezerItems.length / Math.max(1, pantryItems.length)) * 100)}%
+              </span>
+            </div>
+            <p className="text-xl font-black text-stone-900 mt-1">{freezerItems.length} <span className="text-xs font-normal text-stone-600">articoli</span></p>
+            <div className="w-full bg-sky-100 h-1.5 rounded-full overflow-hidden mt-2">
+              <div
+                className="bg-sky-400 h-full rounded-full"
+                style={{ width: `${(freezerItems.length / Math.max(1, pantryItems.length)) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Valore Totale Stimato Scorte */}
+          <div className="p-3.5 rounded-xl bg-sage-50/70 border border-sage-200/80">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-sage-800 flex items-center space-x-1">
+                <Euro className="w-3 h-3 text-sage-600" />
+                <span>Valore Cibo Posseduto</span>
+              </span>
+              <span className="text-[9px] font-bold text-sage-700 bg-sage-100/80 px-1.5 py-0.2 rounded-full">
+                Stima
+              </span>
+            </div>
+            <p className="text-xl font-black text-stone-900 mt-1">€{totalPantryValue.toFixed(2)}</p>
+            <p className="text-[10px] text-stone-600 font-medium mt-1">
+              Capitale alimentare già a tua disposizione
+            </p>
+          </div>
+        </div>
+
+        {/* 2. Ripartizione per Gruppi Nutrizionali */}
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block mb-2">
+            Ripartizione Nutrizionale Scorte
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+            {/* Carne & Pesce */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Carne & Pesce</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countMeatFish}</span>
+              <span className="text-[9px] text-stone-600">proteine animali</span>
+            </div>
+
+            {/* Ortofrutta */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Ortofrutta</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countVegFruit}</span>
+              <span className="text-[9px] text-stone-600">fibre & vitamine</span>
+            </div>
+
+            {/* Latticini & Uova */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Latticini & Uova</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countDairyEggs}</span>
+              <span className="text-[9px] text-stone-600">calcio & nobili</span>
+            </div>
+
+            {/* Cereali & Pasta */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Cereali & Pasta</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countGrains}</span>
+              <span className="text-[9px] text-stone-600">carboidrati</span>
+            </div>
+
+            {/* Legumi */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Legumi</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countLegumes}</span>
+              <span className="text-[9px] text-stone-600">proteine vegetali</span>
+            </div>
+
+            {/* Condimenti & Altro */}
+            <div className="p-2.5 rounded-xl bg-warm-50/70 border border-stone-200/60 text-center">
+              <span className="text-[10px] font-bold text-stone-600 block">Condimenti</span>
+              <span className="font-extrabold text-stone-900 text-sm mt-0.5 block">{countCondiments}</span>
+              <span className="text-[9px] text-stone-600">grassi sani & spezie</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Elenco Alimenti Attualmente in Casa (Anteprima Rapida con Scadenza) */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600">
+              Cosa hai attualmente in casa ({pantryItems.length} alimenti)
+            </span>
+            <span className="text-[10px] text-stone-600 font-medium">
+              I pallini ambra indicano alimenti da consumare a breve
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+            {pantryItems.map(item => {
+              const daysLeft = getDaysToExpiry(item.expiryDate);
+              const isUrgent = daysLeft <= 3 && daysLeft >= -1;
+
+              return (
+                <div
+                  key={item.id}
+                  onClick={() => setActiveView('pantry')}
+                  className={`px-2.5 py-1 rounded-xl border text-xs flex items-center space-x-1.5 transition-all cursor-pointer hover:shadow-soft-xs ${
+                    isUrgent
+                      ? 'bg-pastel-amber-bg/70 border-pastel-amber-border text-stone-900 font-semibold'
+                      : 'bg-warm-50/70 border-stone-200/60 text-stone-700 hover:bg-white'
+                  }`}
+                  title={isUrgent ? `Scade tra ${daysLeft} giorni!` : `Collocazione: ${item.location}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: isUrgent ? '#F59E0B' : item.location === 'fridge' ? '#3B82F6' : item.location === 'freezer' ? '#0EA5E9' : '#10B981' }}></span>
+                  <span>{item.name}</span>
+                  <span className="text-[10px] text-stone-600 font-bold bg-white/80 border border-stone-200/50 px-1 rounded">
+                    {item.quantity} {item.unit}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -471,7 +706,6 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
                     alt={recipe.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  {/* Soft pill badge on image */}
                   <div className="absolute top-2.5 right-2.5">
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded-full shadow-soft-xs backdrop-blur-md ${
@@ -517,7 +751,7 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
         </div>
       </div>
 
-      {/* Food Waste & Savings Impact Card - Redesigned to Soft Aesthetic */}
+      {/* Food Waste & Savings Impact Card */}
       <div className="bg-gradient-to-br from-sage-50/90 via-warm-50 to-warm-100/70 rounded-2xl p-5 sm:p-6 border border-sage-200/70 shadow-soft-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div className="space-y-1.5 max-w-xl">
