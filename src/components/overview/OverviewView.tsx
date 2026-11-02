@@ -62,13 +62,24 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
 
   // Filtri ricette pronte
   const [selectedIngredientFilter, setSelectedIngredientFilter] = useState<string | null>(null);
-  const [recipeFilterTab, setRecipeFilterTab] = useState<'all' | 'fast' | 'expiring' | 'protein' | 'light'>('all');
+  const [recipeFilterTab, setRecipeFilterTab] = useState<'all' | 'schiscetta' | 'fast' | 'expiring' | 'protein' | 'light'>('all');
   const [cookingSuccessNotice, setCookingSuccessNotice] = useState<string | null>(null);
 
   // 1. Dati nutrizionali e pasti di oggi
   const today = new Date();
   const todayStr = today.toISOString().split('T')[0];
   const todayPlan = mealPlan.find(d => d.date === todayStr);
+
+  // Calcolo Schiscetta per domani (se è giorno lavorativo infrasettimanale)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const tomorrowDayOfWeek = tomorrow.getDay(); // 0 = Dom, 1-5 = Lun-Ven, 6 = Sab
+  const isTomorrowWorkDay = tomorrowDayOfWeek >= 1 && tomorrowDayOfWeek <= 5;
+  const tomorrowDayNames = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+  const tomorrowDayName = tomorrowDayNames[tomorrowDayOfWeek];
+  const tomorrowPlan = mealPlan.find(d => d.date === tomorrowStr);
+  const tomorrowLunch = tomorrowPlan?.pranzo[0];
 
   const allTodayMeals = todayPlan
     ? [...todayPlan.colazione, ...todayPlan.pranzo, ...todayPlan.cena, ...todayPlan.snack]
@@ -137,6 +148,9 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
       if (!match) return false;
     }
 
+    if (recipeFilterTab === 'schiscetta') {
+      return Boolean(recipe.isSchiscetta || recipe.tags.includes('schiscetta'));
+    }
     if (recipeFilterTab === 'fast') {
       return recipe.prepTimeMin + recipe.cookTimeMin <= 25;
     }
@@ -386,6 +400,57 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
           </div>
         </div>
       </div>
+
+      {/* 1.5 PROMEMORIA SCHISCETTA DA LAVORO PER DOMANI (Lunedì - Venerdì) */}
+      {isTomorrowWorkDay && (
+        <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/50 to-white rounded-3xl p-4 sm:p-5 border border-blue-200/80 shadow-soft-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-start space-x-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-soft-xs shrink-0">
+              🍱
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900 bg-blue-100/90 border border-blue-200 px-2 py-0.2 rounded-full">
+                  Schiscetta per {tomorrowDayName}
+                </span>
+                <span className="text-xs text-stone-500 font-medium">Ufficio / Lavoro</span>
+              </div>
+              <h3 className="font-bold text-stone-900 text-sm sm:text-base mt-0.5">
+                {tomorrowLunch
+                  ? `Pranzo di domani: ${tomorrowLunch.recipeTitle}`
+                  : `Schiscetta per ${tomorrowDayName} non ancora scelta`}
+              </h3>
+              <p className="text-xs text-stone-600 font-medium mt-0.5">
+                {tomorrowLunch
+                  ? 'Preparala stasera dopo cena: in 15 minuti il tuo pranzo sarà pronto da conservare in frigo e portare al lavoro.'
+                  : 'Scegli ora una ricetta facile da trasportare e cucinala stasera con gli ingredienti già presenti in dispensa.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 shrink-0 self-stretch sm:self-auto">
+            {tomorrowLunch ? (
+              <button
+                onClick={e => handleCookNow(tomorrowLunch.recipeId, tomorrowLunch.recipeTitle, e)}
+                className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-2xl shadow-soft-sm transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+              >
+                <UtensilsCrossed className="w-3.5 h-3.5" />
+                <span>Prepara e Invasetta Stasera</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setRecipeFilterTab('schiscetta');
+                  setViewLayout('recipesOnly');
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-2xl shadow-soft-sm transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+              >
+                <span>Scegli Schiscetta Subito &rarr;</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 2. AREA PRINCIPALE: SCORTE E RICETTE AFFIANCATE O A TUTTO SCHERMO */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -707,6 +772,16 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
                   Tutte ({fullyReadyRecipes.length})
                 </button>
                 <button
+                  onClick={() => setRecipeFilterTab('schiscetta')}
+                  className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all flex items-center space-x-1 ${
+                    recipeFilterTab === 'schiscetta'
+                      ? 'bg-blue-600 text-white shadow-soft-xs'
+                      : 'bg-blue-50/80 text-blue-900 border border-blue-200/80 hover:bg-blue-100'
+                  }`}
+                >
+                  <span>🍱 Schiscette ({fullyReadyRecipes.filter(r => r.recipe.isSchiscetta || r.recipe.tags.includes('schiscetta')).length})</span>
+                </button>
+                <button
                   onClick={() => setRecipeFilterTab('fast')}
                   className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all flex items-center space-x-1 ${
                     recipeFilterTab === 'fast'
@@ -811,6 +886,13 @@ export const OverviewView: React.FC<{ onOpenSmartAdd: () => void }> = ({ onOpenS
                             ✓ 100% Pronto
                           </span>
                         </div>
+                        {recipe.isSchiscetta && (
+                          <div className="absolute top-2 left-2">
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-600 text-white shadow-soft-xs">
+                              🍱 Schiscetta
+                            </span>
+                          </div>
+                        )}
                         {check.hasExpiringSoonIngredient && (
                           <div className="absolute bottom-2 left-2">
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500 text-white flex items-center space-x-1 shadow-soft-xs">

@@ -36,12 +36,16 @@ export const MealPlannerView: React.FC = () => {
   } | null>(null);
 
   const [recipeFilterQuery, setRecipeFilterQuery] = useState('');
+  const [filterOnlySchiscetta, setFilterOnlySchiscetta] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
   const handleOpenPicker = (date: string, mealType: MealType) => {
+    const d = new Date(date + 'T00:00:00');
+    const isWeekdayLunch = mealType === 'pranzo' && d.getDay() >= 1 && d.getDay() <= 5;
     setSlotPickerState({ isOpen: true, date, mealType });
     setRecipeFilterQuery('');
+    setFilterOnlySchiscetta(isWeekdayLunch && (userProfile.workLunchPreference || 'schiscetta') === 'schiscetta');
   };
 
   const handleSelectRecipeForSlot = (recipeId: string) => {
@@ -187,9 +191,16 @@ export const MealPlannerView: React.FC = () => {
                       className="p-2.5 rounded-xl bg-warm-50/40 border border-stone-200/50 flex flex-col justify-between min-h-[125px]"
                     >
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 capitalize">
-                          {type}
-                        </span>
+                        <div className="flex items-center space-x-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 capitalize">
+                            {type}
+                          </span>
+                          {type === 'pranzo' && dateObj.getDay() >= 1 && dateObj.getDay() <= 5 && (
+                            <span className="text-[8px] font-black text-blue-900 bg-blue-50 border border-blue-200/70 px-1 py-0.2 rounded flex items-center space-x-0.5">
+                              <span>🍱 Schiscetta</span>
+                            </span>
+                          )}
+                        </div>
                         <button
                           onClick={() => handleOpenPicker(day.date, type)}
                           className="text-[10px] text-sage-700 hover:text-sage-900 font-bold flex items-center space-x-0.5 px-1.5 py-0.5 hover:bg-white rounded transition-colors"
@@ -217,17 +228,24 @@ export const MealPlannerView: React.FC = () => {
                               }`}
                             >
                               <div className="flex items-start justify-between gap-1">
-                                <span
-                                  onClick={() => {
-                                    const rec = recipes.find(r => r.id === meal.recipeId);
-                                    if (rec) setSelectedRecipeForDetail(rec);
-                                  }}
-                                  className={`font-bold hover:underline cursor-pointer line-clamp-1 text-[11px] ${
-                                    meal.consumed ? 'line-through text-stone-400' : 'text-stone-900'
-                                  }`}
-                                >
-                                  {meal.recipeTitle}
-                                </span>
+                                <div>
+                                  <span
+                                    onClick={() => {
+                                      const rec = recipes.find(r => r.id === meal.recipeId);
+                                      if (rec) setSelectedRecipeForDetail(rec);
+                                    }}
+                                    className={`font-bold hover:underline cursor-pointer line-clamp-1 text-[11px] block ${
+                                      meal.consumed ? 'line-through text-stone-400' : 'text-stone-900'
+                                    }`}
+                                  >
+                                    {meal.recipeTitle}
+                                  </span>
+                                  {meal.isSchiscetta && (
+                                    <span className="text-[8px] font-bold text-blue-800 bg-blue-50 border border-blue-200/60 px-1 py-0.2 rounded mt-0.5 inline-block">
+                                      🍱 Prep la sera prima
+                                    </span>
+                                  )}
+                                </div>
                                 <button
                                   onClick={() => removeMealFromPlan(day.date, meal.id)}
                                   className="text-stone-300 hover:text-red-500 p-0.5 shrink-0"
@@ -285,39 +303,72 @@ export const MealPlannerView: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-3 border-b border-stone-100">
+            <div className="p-3 border-b border-stone-100 space-y-2">
               <input
                 type="text"
                 value={recipeFilterQuery}
                 onChange={e => setRecipeFilterQuery(e.target.value)}
-                placeholder="Filtra ricette..."
+                placeholder="Filtra ricette per nome o ingrediente..."
                 className="w-full p-2 text-xs border border-stone-200 rounded-xl focus:outline-none focus:border-sage-500"
               />
+
+              {slotPickerState.mealType === 'pranzo' && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setFilterOnlySchiscetta(!filterOnlySchiscetta)}
+                    className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all flex items-center space-x-1 border ${
+                      filterOnlySchiscetta
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-soft-xs'
+                        : 'bg-warm-100 text-stone-700 hover:bg-stone-200 border-stone-200'
+                    }`}
+                  >
+                    <span>🍱 Solo Schiscette da Lavoro</span>
+                  </button>
+                  <span className="text-[10px] text-stone-500 font-medium">
+                    (Ideali da preparare la sera prima)
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="p-3 overflow-y-auto space-y-1.5 flex-1 max-h-96">
               {recipes
-                .filter(r => r.title.toLowerCase().includes(recipeFilterQuery.toLowerCase()))
+                .filter(r => {
+                  const matchesQuery =
+                    r.title.toLowerCase().includes(recipeFilterQuery.toLowerCase()) ||
+                    r.tags.some(t => t.toLowerCase().includes(recipeFilterQuery.toLowerCase()));
+                  const matchesSchiscetta = !filterOnlySchiscetta || r.isSchiscetta || r.tags.includes('schiscetta');
+                  return matchesQuery && matchesSchiscetta;
+                })
                 .map(r => (
                   <div
                     key={r.id}
                     onClick={() => handleSelectRecipeForSlot(r.id)}
                     className="p-2.5 bg-warm-50/50 hover:bg-sage-50/80 border border-stone-200/60 hover:border-sage-300 rounded-xl flex items-center justify-between cursor-pointer transition-all"
                   >
-                    <div className="flex items-center space-x-2.5">
+                    <div className="flex items-center space-x-2.5 min-w-0">
                       <img
                         src={r.image}
                         alt={r.title}
-                        className="w-9 h-9 rounded-lg object-cover"
+                        className="w-10 h-10 rounded-lg object-cover shrink-0"
                       />
-                      <div>
-                        <h5 className="font-bold text-stone-900 text-xs">{r.title}</h5>
-                        <p className="text-[10px] text-stone-600 font-medium">
+                      <div className="truncate">
+                        <div className="flex items-center space-x-1.5">
+                          <h5 className="font-bold text-stone-900 text-xs truncate">{r.title}</h5>
+                          {r.isSchiscetta && (
+                            <span className="text-[8px] font-bold text-blue-900 bg-blue-50 border border-blue-200/80 px-1 py-0.2 rounded shrink-0">
+                              🍱 Schiscetta
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-stone-600 font-medium truncate mt-0.5">
                           {r.prepTimeMin + r.cookTimeMin} min • {r.category}
+                          {r.mealPrepNotes && ` • ${r.mealPrepNotes}`}
                         </p>
                       </div>
                     </div>
-                    <span className="text-[11px] font-bold text-sage-700">Scegli &rarr;</span>
+                    <span className="text-[11px] font-bold text-sage-700 shrink-0 ml-2">Scegli &rarr;</span>
                   </div>
                 ))}
             </div>

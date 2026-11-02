@@ -250,6 +250,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       carbs: Math.round(nutrition.carbs * servings),
       fat: Math.round(nutrition.fat * servings),
       fiber: Math.round(nutrition.fiber * servings),
+      isSchiscetta: Boolean(recipe.isSchiscetta || recipe.tags.includes('schiscetta')),
     };
 
     setMealPlan(prev => {
@@ -469,15 +470,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const d = new Date(today);
       d.setDate(d.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
+      const dayOfWeek = d.getDay(); // 0 = Dom, 1-5 = Lun-Ven, 6 = Sab
+      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
+      const wantsSchiscetta = (userProfile.workLunchPreference || 'schiscetta') === 'schiscetta';
 
       // Filtra ricette disponibili
       const breakfasts = recipes.filter(r => r.mealType === 'colazione');
-      const lunches = recipes.filter(r => r.mealType === 'pranzo' || r.category === 'primo' || r.category === 'piatto_unico');
+      
+      // Nei giorni feriali se l'utente va al lavoro, dai priorità alle schiscette
+      let availableLunches = recipes.filter(
+        r => r.mealType === 'pranzo' || r.category === 'primo' || r.category === 'piatto_unico'
+      );
+      let isSchiscettaAssigned = false;
+
+      if (isWeekday && wantsSchiscetta) {
+        const schiscette = availableLunches.filter(r => r.isSchiscetta || r.tags.includes('schiscetta'));
+        if (schiscette.length > 0) {
+          availableLunches = schiscette;
+          isSchiscettaAssigned = true;
+        }
+      }
+
       const dinners = recipes.filter(r => r.mealType === 'cena' || r.category === 'secondo' || r.category === 'piatto_unico');
 
       // Seleziona ricette ruotando ed evitando ripetizioni
       const chosenBreakfast = breakfasts[i % breakfasts.length];
-      const chosenLunch = lunches[(i + 1) % lunches.length];
+      const chosenLunch = availableLunches[i % availableLunches.length];
       const chosenDinner = dinners[(i + 2) % dinners.length];
 
       const bNut = calculateRecipeNutritionPerServing(chosenBreakfast, 1);
@@ -514,6 +532,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             carbs: Math.round(lNut.carbs),
             fat: Math.round(lNut.fat),
             fiber: Math.round(lNut.fiber),
+            isSchiscetta: isSchiscettaAssigned || Boolean(chosenLunch.isSchiscetta),
           },
         ],
         cena: [

@@ -23,6 +23,7 @@ export const RecipesView: React.FC = () => {
   const [selectedMealType, setSelectedMealType] = useState<'all' | MealType>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'full' | 'high'>('all');
+  const [schiscettaOnly, setSchiscettaOnly] = useState(false);
   const [maxTime, setMaxTime] = useState<number>(999);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
@@ -65,7 +66,10 @@ export const RecipesView: React.FC = () => {
       if (availabilityFilter === 'full') matchesAvail = check.matchPercentage === 100;
       if (availabilityFilter === 'high') matchesAvail = check.matchPercentage >= 70;
 
-      return matchesSearch && matchesMeal && matchesCat && matchesTime && matchesAvail;
+      // Schiscetta filter
+      const matchesSchiscetta = !schiscettaOnly || Boolean(recipe.isSchiscetta || recipe.tags.includes('schiscetta'));
+
+      return matchesSearch && matchesMeal && matchesCat && matchesTime && matchesAvail && matchesSchiscetta;
     })
     .sort((a, b) => b.check.matchPercentage - a.check.matchPercentage);
 
@@ -142,6 +146,16 @@ export const RecipesView: React.FC = () => {
           }`}
         >
           &ge; 70% Pronte
+        </button>
+        <button
+          onClick={() => setSchiscettaOnly(!schiscettaOnly)}
+          className={`px-3 py-1.5 rounded-xl font-bold transition-all whitespace-nowrap flex items-center space-x-1 ${
+            schiscettaOnly
+              ? 'bg-blue-600 text-white border border-blue-600 shadow-soft-xs'
+              : 'bg-blue-50/80 text-blue-900 border border-blue-200/80 hover:bg-blue-100'
+          }`}
+        >
+          <span>🍱 Solo Schiscette</span>
         </button>
       </div>
 
@@ -221,6 +235,15 @@ export const RecipesView: React.FC = () => {
                     {check.matchPercentage}% pronto
                   </span>
                 </div>
+
+                {/* Schiscetta tag */}
+                {recipe.isSchiscetta && (
+                  <div className="absolute top-2.5 left-2.5">
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-600/90 text-white shadow-soft-xs backdrop-blur-md">
+                      🍱 Schiscetta
+                    </span>
+                  </div>
+                )}
 
                 {/* Salva-scadenza tag */}
                 {check.hasExpiringSoonIngredient && (

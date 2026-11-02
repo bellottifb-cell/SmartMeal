@@ -71,6 +71,8 @@ export interface Recipe {
   micronutrients?: string[];
   tags: string[];
   isCustom?: boolean;
+  isSchiscetta?: boolean; // Piatto ideale per schiscetta da lavoro preparabile in anticipo
+  mealPrepNotes?: string; // Note di trasporto, conservazione e riscaldamento al microonde
 }
 
 export interface PlannedMeal {
@@ -85,6 +87,7 @@ export interface PlannedMeal {
   carbs: number;
   fat: number;
   fiber: number;
+  isSchiscetta?: boolean; // Contrassegna se è una schiscetta da lavoro
 }
 
 export interface DayPlan {
@@ -111,6 +114,8 @@ export interface UserProfile {
   dietaryPreferences: string[];
   allergies: string[];
   dislikedFoods: string[];
+  workLunchPreference?: 'schiscetta' | 'home' | 'any'; // Preferenza pranzo nei giorni lavorativi
+  workDays?: number[]; // Giorni infrasettimanali di lavoro (default 1-5 = Lun-Ven)
   customTargetsEnabled: boolean;
   customTargets: {
     calories: number;

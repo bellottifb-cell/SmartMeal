@@ -28,6 +28,10 @@ export const ProfileView: React.FC = () => {
   const [dislikedFoods, setDislikedFoods] = useState<string[]>(userProfile.dislikedFoods);
   const [newDislikeInput, setNewDislikeInput] = useState('');
 
+  const [workLunchPreference, setWorkLunchPreference] = useState<'schiscetta' | 'home' | 'any'>(
+    userProfile.workLunchPreference || 'schiscetta'
+  );
+
   const [customTargetsEnabled, setCustomTargetsEnabled] = useState(userProfile.customTargetsEnabled);
   const [customCalories, setCustomCalories] = useState(userProfile.customTargets.calories);
   const [customProtein, setCustomProtein] = useState(userProfile.customTargets.proteinG);
@@ -68,6 +72,7 @@ export const ProfileView: React.FC = () => {
       weeklyWorkouts,
       allergies,
       dislikedFoods,
+      workLunchPreference,
       customTargetsEnabled,
       customTargets: {
         calories: customCalories,
@@ -314,6 +319,66 @@ export const ProfileView: React.FC = () => {
                   className="px-3 py-1.5 bg-warm-100 hover:bg-warm-200 text-stone-800 text-xs font-bold rounded-xl"
                 >
                   Aggiungi
+                </button>
+              </div>
+            </div>
+
+            {/* Pranzo da Lavoro / Schiscetta */}
+            <div className="pt-3 border-t border-stone-100 space-y-2">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-700">
+                Pranzo Infrasettimanale (Lavoro Lunedì - Venerdì)
+              </label>
+              <p className="text-[11px] text-stone-600 font-medium">
+                Se durante la settimana vai al lavoro, SmartMeal pianificherà piatti ideali per la schiscetta, preparabili la sera prima.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setWorkLunchPreference('schiscetta')}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    workLunchPreference === 'schiscetta'
+                      ? 'bg-sage-50 border-sage-500 shadow-soft-xs ring-1 ring-sage-400'
+                      : 'bg-warm-50/50 hover:bg-white border-stone-200/70'
+                  }`}
+                >
+                  <span className="text-sm">🍱</span>
+                  <p className="text-xs font-bold text-stone-900 mt-1">Schiscetta da Ufficio</p>
+                  <p className="text-[10px] text-stone-600 font-medium mt-0.5">
+                    Preparabile la sera prima, ottima fredda o riscaldata 1 min.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWorkLunchPreference('home')}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    workLunchPreference === 'home'
+                      ? 'bg-sage-50 border-sage-500 shadow-soft-xs ring-1 ring-sage-400'
+                      : 'bg-warm-50/50 hover:bg-white border-stone-200/70'
+                  }`}
+                >
+                  <span className="text-sm">🏠</span>
+                  <p className="text-xs font-bold text-stone-900 mt-1">Smart Working / Casa</p>
+                  <p className="text-[10px] text-stone-600 font-medium mt-0.5">
+                    Posso cucinare espresso al momento.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWorkLunchPreference('any')}
+                  className={`p-3 rounded-2xl border text-left transition-all ${
+                    workLunchPreference === 'any'
+                      ? 'bg-sage-50 border-sage-500 shadow-soft-xs ring-1 ring-sage-400'
+                      : 'bg-warm-50/50 hover:bg-white border-stone-200/70'
+                  }`}
+                >
+                  <span className="text-sm">🍽️</span>
+                  <p className="text-xs font-bold text-stone-900 mt-1">Qualsiasi Ricetta</p>
+                  <p className="text-[10px] text-stone-600 font-medium mt-0.5">
+                    Nessun vincolo particolare sulla preparazione.
+                  </p>
                 </button>
               </div>
             </div>

@@ -110,6 +110,11 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
               <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-sage-500/90 backdrop-blur-md text-white">
                 {recipe.category}
               </span>
+              {recipe.isSchiscetta && (
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-600/90 backdrop-blur-md text-white flex items-center space-x-1">
+                  <span>🍱 Schiscetta da Lavoro</span>
+                </span>
+              )}
               <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center space-x-1">
                 <Clock className="w-3 h-3" />
                 <span>{recipe.prepTimeMin + recipe.cookTimeMin} min</span>
@@ -321,6 +326,17 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
               ))}
             </div>
           </div>
+
+          {/* Consigli per Schiscetta / Meal Prep da Lavoro */}
+          {recipe.mealPrepNotes && (
+            <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-start space-x-3">
+              <span className="text-xl shrink-0">🍱</span>
+              <div>
+                <span className="text-xs font-bold text-blue-950 block">Consigli per la Schiscetta (Lavoro & Ufficio)</span>
+                <p className="text-[11px] text-blue-900 font-medium leading-relaxed mt-0.5">{recipe.mealPrepNotes}</p>
+              </div>
+            </div>
+          )}
 
           {/* Quick Action: Cucina Adesso se 100% pronto o scarica dal frigo */}
           <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${
