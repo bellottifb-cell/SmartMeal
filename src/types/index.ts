@@ -20,7 +20,7 @@ export type UnitType = 'g' | 'kg' | 'ml' | 'l' | 'pz' | 'cucchiaio' | 'fetta' | 
 export interface PantryItem {
   id: string;
   name: string;
-  normalizedKey: string; // e.g. "petto di pollo" -> "pollo"
+  normalizedKey?: string; // e.g. "petto di pollo" -> "pollo"
   quantity: number;
   unit: UnitType;
   category: FoodCategory;

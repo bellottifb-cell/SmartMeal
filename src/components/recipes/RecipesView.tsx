@@ -7,7 +7,9 @@ import {
   Euro,
   AlertTriangle,
   ChevronRight,
+  UtensilsCrossed,
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { useApp } from '../../context/AppContext';
 import { Recipe, MealType } from '../../types';
 import { checkRecipeAgainstPantry, calculateRecipeNutritionPerServing } from '../../utils/nutrition';
@@ -15,7 +17,7 @@ import { RecipeDetailModal } from './RecipeDetailModal';
 import { RecipeAiModal } from './RecipeAiModal';
 
 export const RecipesView: React.FC = () => {
-  const { recipes, pantryItems, selectedRecipeForDetail, setSelectedRecipeForDetail } = useApp();
+  const { recipes, pantryItems, selectedRecipeForDetail, setSelectedRecipeForDetail, cookRecipeNow } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMealType, setSelectedMealType] = useState<'all' | MealType>('all');
@@ -23,6 +25,17 @@ export const RecipesView: React.FC = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'full' | 'high'>('all');
   const [maxTime, setMaxTime] = useState<number>(999);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+
+  const handleCookRecipeNow = (recipe: Recipe, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm(`Vuoi cucinare "${recipe.title}" adesso? Gli ingredienti verranno scalati dalla tua dispensa e le calorie conteggiate per oggi.`)) {
+      const ok = cookRecipeNow(recipe.id, 1);
+      if (ok) {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        alert(`🎉 Ottimo! Hai cucinato "${recipe.title}". Gli ingredienti sono stati aggiornati.`);
+      }
+    }
+  };
 
   // Calcola disponibilità e filtri
   const filteredRecipes = recipes
@@ -236,11 +249,23 @@ export const RecipesView: React.FC = () => {
                   </h4>
                 </div>
 
-                {/* Macros footer */}
-                <div className="mt-3 pt-2.5 border-t border-stone-100 flex items-center justify-between text-[11px] font-semibold text-stone-600">
-                  <span className="text-stone-900 font-bold">{nut.calories} kcal</span>
-                  <span className="text-blue-600">{nut.protein}g prot</span>
-                  <span className="text-stone-700">€{nut.estimatedCost}</span>
+                {/* Macros footer & Quick Cook Button */}
+                <div className="mt-3 pt-2.5 border-t border-stone-100 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-stone-600">
+                    <span className="text-stone-900 font-bold">{nut.calories} kcal</span>
+                    <span className="text-blue-600 font-bold">{nut.protein}g prot</span>
+                    <span className="text-stone-700">€{nut.estimatedCost}</span>
+                  </div>
+
+                  {check.matchPercentage === 100 && (
+                    <button
+                      onClick={e => handleCookRecipeNow(recipe, e)}
+                      className="w-full py-1.5 px-2 bg-sage-50 hover:bg-sage-500 hover:text-white text-sage-800 text-[11px] font-bold rounded-xl border border-sage-200/80 transition-all flex items-center justify-center space-x-1 shadow-soft-xs"
+                    >
+                      <UtensilsCrossed className="w-3 h-3" />
+                      <span>Cucina Adesso</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

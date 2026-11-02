@@ -55,6 +55,7 @@ interface AppContextType {
   assignMealToPlan: (date: string, mealType: MealType, recipeId: string, servings?: number) => void;
   removeMealFromPlan: (date: string, mealId: string) => void;
   toggleMealConsumed: (date: string, mealId: string) => void;
+  cookRecipeNow: (recipeId: string, servings?: number) => boolean;
   autoGenerateWeeklyMealPlan: () => void;
   groceryItems: GroceryItem[];
   addManualGroceryItem: (name: string, amount: number, unit: UnitType, category?: FoodCategory) => void;
@@ -368,6 +369,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Cucina istantaneamente una ricetta oggi: scala gli ingredienti dalla dispensa e registra le calorie
+  const cookRecipeNow = (recipeId: string, servings: number = 1): boolean => {
+    const rec = recipes.find(r => r.id === recipeId);
+    if (!rec) return false;
+
+    const nutrition = calculateRecipeNutritionPerServing(rec, servings);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const mealType: MealType = rec.mealType || 'pranzo';
+
+    const plannedMeal = {
+      id: `cooked_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
+      recipeId: rec.id,
+      recipeTitle: rec.title,
+      mealType,
+      servings,
+      consumed: true,
+      calories: nutrition.calories * servings,
+      protein: Math.round(nutrition.protein * servings),
+      carbs: Math.round(nutrition.carbs * servings),
+      fat: Math.round(nutrition.fat * servings),
+      fiber: Math.round(nutrition.fiber * servings),
+    };
+
+    setMealPlan(prev => {
+      const dayIndex = prev.findIndex(d => d.date === todayStr);
+      if (dayIndex >= 0) {
+        const updatedDays = [...prev];
+        const day = { ...updatedDays[dayIndex] };
+        day[mealType] = [...day[mealType], plannedMeal];
+        updatedDays[dayIndex] = day;
+        return updatedDays;
+      } else {
+        const newDay: DayPlan = {
+          date: todayStr,
+          colazione: mealType === 'colazione' ? [plannedMeal] : [],
+          pranzo: mealType === 'pranzo' ? [plannedMeal] : [],
+          cena: mealType === 'cena' ? [plannedMeal] : [],
+          snack: mealType === 'snack' ? [plannedMeal] : [],
+        };
+        return [...prev, newDay].sort((a, b) => (a.date > b.date ? 1 : -1));
+      }
+    });
+
+    const scale = servings / (rec.servings || 1);
+    setPantryItems(prevPantry => {
+      const newPantry = [...prevPantry];
+
+      rec.ingredients.forEach(ing => {
+        const ingKey = ing.normalizedKey || normalizeKey(ing.name);
+        const neededBase = convertToBaseUnit(ing.amount * scale, ing.unit);
+
+        const matchIndex = newPantry.findIndex(
+          p => (p.normalizedKey || normalizeKey(p.name)) === ingKey
+        );
+
+        if (matchIndex >= 0) {
+          const current = newPantry[matchIndex];
+          const curBase = convertToBaseUnit(current.quantity, current.unit);
+          const remainingBase = Math.max(0, curBase.amount - neededBase.amount);
+
+          if (remainingBase <= 0) {
+            newPantry.splice(matchIndex, 1);
+          } else {
+            const updatedDisplay = formatUnitDisplay(remainingBase, curBase.baseUnit);
+            newPantry[matchIndex] = {
+              ...current,
+              quantity: updatedDisplay.amount,
+              unit: updatedDisplay.unit,
+            };
+          }
+        }
+      });
+
+      return newPantry;
+    });
+
+    setSavings(prev => ({
+      ...prev,
+      moneySavedEur: Number((prev.moneySavedEur + 3.2).toFixed(2)),
+      itemsSaved: prev.itemsSaved + 1,
+      kgSaved: Number((prev.kgSaved + 0.4).toFixed(2)),
+    }));
+
+    return true;
+  };
+
   // Pianificazione Automatica Intelligente
   const autoGenerateWeeklyMealPlan = () => {
     const today = new Date();
@@ -557,6 +644,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignMealToPlan,
         removeMealFromPlan,
         toggleMealConsumed,
+        cookRecipeNow,
         autoGenerateWeeklyMealPlan,
         groceryItems,
         addManualGroceryItem,

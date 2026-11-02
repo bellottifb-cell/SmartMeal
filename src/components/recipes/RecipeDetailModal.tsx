@@ -11,6 +11,7 @@ import {
   Calendar,
   Sparkles,
   Check,
+  UtensilsCrossed,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Recipe, MealType } from '../../types';
@@ -27,7 +28,7 @@ interface RecipeDetailModalProps {
 }
 
 export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, onClose }) => {
-  const { pantryItems, assignMealToPlan, addManualGroceryItem } = useApp();
+  const { pantryItems, assignMealToPlan, addManualGroceryItem, cookRecipeNow } = useApp();
 
   const [servings, setServings] = useState<number>(recipe?.servings || 1);
   const [selectedDay, setSelectedDay] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -44,6 +45,17 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
   const check = checkRecipeAgainstPantry(recipe, pantryItems, servings);
 
   const scale = servings / (recipe.servings || 1);
+
+  const handleCookNow = () => {
+    if (confirm(`Confermi di voler cucinare "${recipe.title}" (${servings} porz.) adesso? Gli ingredienti necessari verranno scalati dal tuo frigorifero e le calorie registrate per oggi.`)) {
+      const success = cookRecipeNow(recipe.id, servings);
+      if (success) {
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        alert(`🎉 Hai cucinato "${recipe.title}"! Gli ingredienti sono stati scalati dal tuo frigorifero.`);
+        onClose();
+      }
+    }
+  };
 
   const handleAddToPlan = () => {
     assignMealToPlan(selectedDay, selectedMealType, recipe.id, servings);
@@ -307,6 +319,47 @@ export const RecipeDetailModal: React.FC<RecipeDetailModalProps> = ({ recipe, on
                   <p className="text-stone-700 font-medium leading-relaxed">{step}</p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Quick Action: Cucina Adesso se 100% pronto o scarica dal frigo */}
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 ${
+            check.matchPercentage === 100
+              ? 'bg-pastel-emerald-bg/60 border-pastel-emerald-border'
+              : 'bg-warm-50 border-stone-200/70'
+          }`}>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <UtensilsCrossed className="w-4 h-4 text-sage-600" />
+                <h4 className="font-bold text-stone-900 text-xs sm:text-sm">
+                  {check.matchPercentage === 100
+                    ? 'Tutti gli ingredienti sono disponibili nel tuo frigorifero!'
+                    : `Disponibilità ingredienti: ${check.matchPercentage}%`}
+                </h4>
+              </div>
+              <p className="text-[11px] text-stone-600 font-medium mt-0.5">
+                {check.matchPercentage === 100
+                  ? 'Clicca per cucinare subito: gli ingredienti verranno scalati dal tuo inventario.'
+                  : 'Puoi comunque cucinarla o aggiungere i mancanti alla spesa.'}
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 shrink-0 w-full sm:w-auto">
+              {check.missingIngredients.length > 0 && (
+                <button
+                  onClick={handleAddMissingToGrocery}
+                  className="flex-1 sm:flex-none px-3 py-2 bg-white hover:bg-stone-100 text-stone-800 border border-stone-200/70 rounded-xl text-xs font-bold transition-all shadow-soft-xs"
+                >
+                  + Spesa ({check.missingIngredients.length})
+                </button>
+              )}
+              <button
+                onClick={handleCookNow}
+                className="flex-1 sm:flex-none px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white rounded-xl text-xs font-bold shadow-soft-sm transition-all flex items-center justify-center space-x-1.5 active:scale-95"
+              >
+                <UtensilsCrossed className="w-3.5 h-3.5" />
+                <span>Cucina Adesso</span>
+              </button>
             </div>
           </div>
 
