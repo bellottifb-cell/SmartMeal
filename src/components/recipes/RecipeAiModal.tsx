@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import {
   X,
   Sparkles,
-  Flame,
-  Clock,
-  Check,
   RotateCw,
-  AlertTriangle,
-  Leaf,
   Plus,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -56,18 +51,18 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-soft-lg border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/60">
+        <div className="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between bg-warm-50/60">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-sage-500 text-white flex items-center justify-center shadow-sm">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-sage-50 text-sage-800 border border-sage-200/60 flex items-center justify-center shadow-soft-xs">
+              <Sparkles className="w-4 h-4 text-sage-600" />
             </div>
             <div>
-              <h3 className="font-bold text-stone-900 text-base">Chef & Nutrizionista AI</h3>
-              <p className="text-xs text-stone-600 font-medium">
-                Genera ricette innovative basate rigorosamente su ciò che hai in frigo
+              <h3 className="font-bold text-stone-900 text-sm sm:text-base">Chef & Nutrizionista AI</h3>
+              <p className="text-[11px] text-stone-600 font-medium">
+                Genera ricette basate rigorosamente su ciò che hai in frigo
               </p>
             </div>
           </div>
@@ -75,23 +70,22 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
             onClick={onClose}
             className="p-1.5 text-stone-400 hover:text-stone-700 rounded-lg"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto space-y-5">
-          {/* Prompt input */}
+        <div className="p-5 overflow-y-auto space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
-              Descrivi cosa desideri cucinare
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
+              Cosa desideri cucinare?
             </label>
             <textarea
               rows={2}
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
-              placeholder="Es: Voglio una cena proteica e leggera pronta in 15 minuti..."
-              className="w-full text-sm rounded-xl border border-stone-200 p-3 focus:outline-none focus:border-sage-500 font-medium text-stone-800 bg-stone-50/40"
+              placeholder="Es: Cena proteica e leggera pronta in 15 minuti..."
+              className="w-full text-xs sm:text-sm rounded-xl border border-stone-200/80 p-2.5 focus:outline-none focus:border-sage-500 font-medium text-stone-800 bg-warm-50/40"
             />
 
             {/* Quick Prompt Presets */}
@@ -103,7 +97,7 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
                     'Crea una ricetta salva-spreco per consumare il petto di pollo e le zucchine con il riso.'
                   )
                 }
-                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold px-2.5 py-1 rounded-lg transition-colors"
+                className="text-[10px] bg-warm-50 hover:bg-warm-100 border border-stone-200/60 text-stone-700 font-semibold px-2 py-1 rounded-lg transition-colors"
               >
                 🍳 Salva-scadenza Pollo & Zucchine
               </button>
@@ -114,7 +108,7 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
                     'Pranzo vegetariano ad alto contenuto di fibre con legumi e verdure.'
                   )
                 }
-                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold px-2.5 py-1 rounded-lg transition-colors"
+                className="text-[10px] bg-warm-50 hover:bg-warm-100 border border-stone-200/60 text-stone-700 font-semibold px-2 py-1 rounded-lg transition-colors"
               >
                 🌱 Veg & High Fiber
               </button>
@@ -125,7 +119,7 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
                     'Cena a basso contenuto di carboidrati pronta in meno di 15 minuti.'
                   )
                 }
-                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold px-2.5 py-1 rounded-lg transition-colors"
+                className="text-[10px] bg-warm-50 hover:bg-warm-100 border border-stone-200/60 text-stone-700 font-semibold px-2 py-1 rounded-lg transition-colors"
               >
                 ⚡ Rapida & Low Carb
               </button>
@@ -136,61 +130,61 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="w-full py-3 bg-sage-600 hover:bg-sage-700 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-sage-200 transition-all flex items-center justify-center space-x-2"
+            className="w-full py-2.5 bg-sage-500 hover:bg-sage-600 disabled:opacity-50 text-white rounded-xl text-xs sm:text-sm font-bold shadow-soft-sm transition-all flex items-center justify-center space-x-2"
           >
             {loading ? (
               <>
-                <RotateCw className="w-4 h-4 animate-spin" />
-                <span>Creazione in corso con parametri nutrizionali deterministici...</span>
+                <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Generazione ricetta in corso...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Genera Nuova Ricetta con AI</span>
               </>
             )}
           </button>
 
-          {/* Result Card Preview */}
+          {/* Generated Recipe Preview */}
           {generatedRecipe && (
-            <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-4 animate-fade-in">
+            <div className="p-4 rounded-2xl bg-warm-50/70 border border-stone-200/70 space-y-3 animate-fade-in">
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-sage-800 bg-sage-100 px-2 py-0.5 rounded">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-sage-800 bg-sage-100 px-2 py-0.2 rounded">
                     Creata per te
                   </span>
-                  <h4 className="font-bold text-stone-900 text-base mt-1">
+                  <h4 className="font-bold text-stone-900 text-sm mt-1">
                     {generatedRecipe.title}
                   </h4>
-                  <p className="text-xs text-stone-600 font-medium mt-0.5">
+                  <p className="text-[11px] text-stone-600 font-medium mt-0.5">
                     {generatedRecipe.description}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-stone-700 bg-white border border-stone-200 px-2.5 py-1 rounded-xl shrink-0">
+                <span className="text-[11px] font-bold text-stone-700 bg-white border border-stone-200 px-2 py-0.5 rounded-lg shrink-0">
                   {generatedRecipe.prepTimeMin + generatedRecipe.cookTimeMin} min
                 </span>
               </div>
 
               {/* Ingredients list */}
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 block mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block mb-1">
                   Ingredienti necessari
                 </span>
                 <div className="grid grid-cols-2 gap-1.5 text-xs">
                   {generatedRecipe.ingredients.map((ing, idx) => (
-                    <div key={idx} className="p-2 bg-white rounded-lg border border-stone-200 font-medium text-stone-800">
+                    <div key={idx} className="p-1.5 bg-white rounded-lg border border-stone-200/60 font-medium text-stone-800 text-[11px]">
                       • {ing.name}: <strong>{ing.amount} {ing.unit}</strong>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Steps preview */}
+              {/* Instructions preview */}
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 block mb-1">
-                  Passaggi principali
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block mb-1">
+                  Procedimento
                 </span>
-                <ul className="space-y-1 text-xs text-stone-700">
+                <ul className="space-y-1 text-[11px] text-stone-700">
                   {generatedRecipe.instructions.slice(0, 3).map((step, idx) => (
                     <li key={idx} className="line-clamp-2">
                       {idx + 1}. {step}
@@ -202,9 +196,9 @@ export const RecipeAiModal: React.FC<RecipeAiModalProps> = ({ isOpen, onClose })
               <div className="pt-2 flex items-center justify-end space-x-2">
                 <button
                   onClick={handleSaveRecipe}
-                  className="px-5 py-2.5 bg-sage-600 hover:bg-sage-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5"
+                  className="px-4 py-2 bg-sage-500 hover:bg-sage-600 text-white rounded-xl text-xs font-bold shadow-soft-xs transition-all flex items-center space-x-1.5"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>Salva nel Ricettario</span>
                 </button>
               </div>

@@ -7,14 +7,12 @@ import {
   Plus,
   Trash2,
   Calendar,
-  Layers,
-  MapPin,
   Camera,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useApp } from '../../context/AppContext';
 import { parseNaturalLanguageInput, ParsedItemCandidate, BARCODE_CATALOG } from '../../utils/parser';
-import { FoodCategory, StorageLocation, UnitType } from '../../types';
+import { StorageLocation, UnitType } from '../../types';
 
 interface SmartAddModalProps {
   isOpen: boolean;
@@ -37,7 +35,6 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
   // Stato codice a barre
   const [barcodeInput, setBarcodeInput] = useState('');
   const [scannedProduct, setScannedProduct] = useState<any | null>(null);
-  const [scannerActive, setScannerActive] = useState(false);
 
   if (!isOpen) return null;
 
@@ -87,7 +84,7 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
     batchAddPantryItems(itemsToAdd);
 
     confetti({
-      particleCount: 80,
+      particleCount: 70,
       spread: 70,
       origin: { y: 0.6 },
     });
@@ -95,7 +92,6 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
     onClose();
   };
 
-  // Barcode actions
   const handleLookupBarcode = (code: string) => {
     setBarcodeInput(code);
     const found = BARCODE_CATALOG[code];
@@ -130,7 +126,7 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
     });
 
     confetti({
-      particleCount: 60,
+      particleCount: 50,
       spread: 60,
       origin: { y: 0.6 },
     });
@@ -139,83 +135,81 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-2xl rounded-3xl shadow-soft-lg border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+        <div className="p-4 sm:p-5 border-b border-stone-100 flex items-center justify-between bg-warm-50/60">
           <div className="flex items-center space-x-2.5">
-            <div className="w-9 h-9 rounded-xl bg-sage-500 text-white flex items-center justify-center shadow-sm">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-xl bg-sage-50 text-sage-800 border border-sage-200/60 flex items-center justify-center shadow-soft-xs">
+              <Sparkles className="w-4 h-4 text-sage-600" />
             </div>
             <div>
-              <h3 className="font-bold text-stone-900 text-base">Inserimento Intelligente Alimenti</h3>
-              <p className="text-xs text-stone-600 font-medium">Interpreta frasi parlate, scontrini o codici a barre</p>
+              <h3 className="font-bold text-stone-900 text-sm sm:text-base">Inserimento Intelligente Alimenti</h3>
+              <p className="text-[11px] text-stone-600 font-medium">Interpreta frasi parlate, scontrini o codici a barre</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors"
+            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Tab switch */}
-        <div className="flex border-b border-stone-100 px-6 pt-3 bg-white">
+        <div className="flex border-b border-stone-100 px-5 pt-2 bg-white">
           <button
             onClick={() => setActiveTab('text')}
-            className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-all mr-6 ${
+            className={`pb-2.5 text-xs font-bold flex items-center space-x-1.5 border-b-2 transition-all mr-5 ${
               activeTab === 'text'
                 ? 'border-sage-600 text-sage-800'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
-            <Sparkles className="w-4 h-4 text-sage-600" />
+            <Sparkles className="w-3.5 h-3.5 text-sage-600" />
             <span>Linguaggio Naturale</span>
           </button>
           <button
             onClick={() => setActiveTab('barcode')}
-            className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-all ${
+            className={`pb-2.5 text-xs font-bold flex items-center space-x-1.5 border-b-2 transition-all ${
               activeTab === 'barcode'
                 ? 'border-sage-600 text-sage-800'
                 : 'border-transparent text-stone-600 hover:text-stone-900'
             }`}
           >
-            <Barcode className="w-4 h-4 text-sage-600" />
+            <Barcode className="w-3.5 h-3.5 text-sage-600" />
             <span>Codice a Barre (EAN)</span>
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
           {activeTab === 'text' ? (
             <>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
                   Scrivi o incolla gli alimenti acquistati
                 </label>
-                <div className="relative">
+                <div>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={inputText}
                     onChange={e => handleParse(e.target.value)}
                     placeholder="Es: Ho comprato 500 g di petto di pollo, 1 kg di riso, 6 uova e 2 zucchine."
-                    className="w-full text-sm rounded-xl border border-stone-200 p-3.5 focus:outline-none focus:ring-2 focus:ring-sage-500/30 focus:border-sage-500 transition-all font-medium text-stone-800 bg-stone-50/30 placeholder:text-stone-400"
+                    className="w-full text-xs sm:text-sm rounded-xl border border-stone-200/80 p-3 focus:outline-none focus:border-sage-500 font-medium text-stone-800 bg-warm-50/40 placeholder:text-stone-400"
                   />
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-[11px] text-stone-600 font-medium">
-                      Suggerimento: usa virgole o "e" per separare più alimenti con relative quantità.
-                    </span>
+                  <div className="flex items-center justify-between mt-1 text-[10px] text-stone-600">
+                    <span>Separa alimenti con virgole o "e".</span>
                     <button
                       type="button"
                       onClick={() =>
                         handleParse(
-                          '300 g salmone fresco, 2 mozzarelle, 1 barattolo di ceci, 400 g pomodori ciliegino e 1 confezione di spinaci'
+                          '300 g salmone fresco, 2 mozzarelle, 1 scatola ceci, 400 g pomodori ciliegino e 1 conf spinaci'
                         )
                       }
-                      className="text-[11px] text-sage-700 font-bold hover:underline"
+                      className="text-sage-700 font-bold hover:underline"
                     >
-                      Prova altro esempio &rarr;
+                      Esempio spesa &rarr;
                     </button>
                   </div>
                 </div>
@@ -223,55 +217,55 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
 
               {/* Parsed Preview Table */}
               <div>
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-xs font-bold uppercase tracking-wider text-stone-600">
-                    Alimenti Interpretati ({parsedItems.length})
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600">
+                    Alimenti Riconosciuti ({parsedItems.length})
                   </span>
-                  <span className="text-[11px] text-stone-600 font-medium">
-                    Puoi modificare quantità, categoria o luogo prima di confermare.
+                  <span className="text-[10px] text-stone-600 font-medium">
+                    Modifica valori prima di confermare.
                   </span>
                 </div>
 
                 {parsedItems.length === 0 ? (
-                  <div className="p-8 text-center bg-stone-50 rounded-xl border border-dashed border-stone-200">
+                  <div className="p-6 text-center bg-warm-50/50 rounded-xl border border-dashed border-stone-200">
                     <p className="text-xs text-stone-600 font-medium">
-                      Nessun alimento rilevato. Scrivi una frase come: "Ho comprato 500g di pollo..."
+                      Nessun alimento rilevato.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                     {parsedItems.map((item, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-stone-50/80 rounded-xl border border-stone-200/80 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs"
+                        className="p-2.5 bg-warm-50/60 rounded-xl border border-stone-200/60 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 text-xs"
                       >
                         {/* Food Name */}
-                        <div className="flex-1 min-w-[140px]">
+                        <div className="flex-1 min-w-[120px]">
                           <input
                             type="text"
                             value={item.name}
                             onChange={e => handleItemChange(idx, 'name', e.target.value)}
-                            className="font-bold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-sage-500 focus:outline-none w-full"
+                            className="font-bold text-stone-900 bg-transparent border-b border-transparent hover:border-stone-300 focus:border-sage-500 focus:outline-none w-full text-xs"
                           />
-                          <span className="text-[10px] text-stone-600 font-medium capitalize">
+                          <span className="text-[9px] text-stone-600 font-medium capitalize">
                             Cat: {item.category}
                           </span>
                         </div>
 
                         {/* Quantity & Unit */}
-                        <div className="flex items-center space-x-1.5">
+                        <div className="flex items-center space-x-1">
                           <input
                             type="number"
                             min="0.1"
                             step="any"
                             value={item.quantity}
                             onChange={e => handleItemChange(idx, 'quantity', parseFloat(e.target.value) || 0)}
-                            className="w-16 p-1.5 bg-white border border-stone-200 rounded-lg text-center font-bold text-stone-800 focus:outline-none focus:border-sage-500"
+                            className="w-14 p-1 bg-white border border-stone-200 rounded-lg text-center font-bold text-xs text-stone-800 focus:outline-none focus:border-sage-500"
                           />
                           <select
                             value={item.unit}
                             onChange={e => handleItemChange(idx, 'unit', e.target.value as UnitType)}
-                            className="p-1.5 bg-white border border-stone-200 rounded-lg font-medium text-stone-700 focus:outline-none focus:border-sage-500"
+                            className="p-1 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-700 focus:outline-none focus:border-sage-500"
                           >
                             <option value="g">g</option>
                             <option value="kg">kg</option>
@@ -287,25 +281,25 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
                         <select
                           value={item.location}
                           onChange={e => handleItemChange(idx, 'location', e.target.value as StorageLocation)}
-                          className="p-1.5 bg-white border border-stone-200 rounded-lg text-[11px] font-medium text-stone-700 focus:outline-none focus:border-sage-500"
+                          className="p-1 bg-white border border-stone-200 rounded-lg text-[10px] font-semibold text-stone-700 focus:outline-none focus:border-sage-500"
                         >
-                          <option value="fridge">Frigorifero</option>
+                          <option value="fridge">Frigo</option>
                           <option value="pantry">Dispensa</option>
                           <option value="freezer">Freezer</option>
                         </select>
 
                         {/* Expiry Days */}
-                        <div className="flex items-center space-x-1 text-[11px] text-stone-600 bg-white px-2 py-1.5 rounded-lg border border-stone-200">
-                          <Calendar className="w-3.5 h-3.5 text-stone-600" />
+                        <div className="flex items-center space-x-1 text-[10px] text-stone-600 bg-white px-2 py-1 rounded-lg border border-stone-200">
+                          <Calendar className="w-3 h-3 text-stone-600" />
                           <span>+{item.estimatedExpiryDays}gg</span>
                         </div>
 
-                        {/* Delete button */}
+                        {/* Remove */}
                         <button
                           onClick={() => handleRemoveCandidate(idx)}
-                          className="p-1.5 text-stone-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1 text-stone-600 hover:text-red-500 rounded transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ))}
@@ -314,55 +308,55 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
               </div>
             </>
           ) : (
-            /* Barcode scanner view */
-            <div className="space-y-4">
-              <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 text-center">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-sage-100 text-sage-700 flex items-center justify-center">
-                  <Camera className="w-6 h-6" />
+            /* Barcode view */
+            <div className="space-y-3.5">
+              <div className="p-4 bg-warm-50/60 rounded-xl border border-stone-200/60 text-center">
+                <div className="w-10 h-10 mx-auto mb-1.5 rounded-xl bg-sage-50 border border-sage-200/60 text-sage-700 flex items-center justify-center">
+                  <Camera className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold text-sm text-stone-900">Scansione Barcode EAN-13</h4>
-                <p className="text-xs text-stone-600 font-medium mt-1">
-                  Inquadra la confezione con la webcam oppure seleziona un codice di prova rapido.
+                <h4 className="font-bold text-xs text-stone-900">Scansione Barcode EAN-13</h4>
+                <p className="text-[11px] text-stone-600 font-medium mt-0.5">
+                  Inserisci un codice o seleziona un prodotto test.
                 </p>
 
-                <div className="mt-4 flex max-w-sm mx-auto">
+                <div className="mt-3 flex max-w-xs mx-auto">
                   <input
                     type="text"
                     value={barcodeInput}
                     onChange={e => handleLookupBarcode(e.target.value)}
                     placeholder="Es: 8001234567890"
-                    className="flex-1 p-2.5 text-xs border border-stone-300 rounded-l-xl focus:outline-none focus:border-sage-500 font-mono"
+                    className="flex-1 p-2 text-xs border border-stone-300 rounded-l-xl focus:outline-none focus:border-sage-500 font-mono"
                   />
                   <button
                     onClick={() => handleLookupBarcode(barcodeInput)}
-                    className="px-4 bg-sage-600 text-white text-xs font-semibold rounded-r-xl hover:bg-sage-700"
+                    className="px-3 bg-stone-900 text-white text-xs font-semibold rounded-r-xl hover:bg-black"
                   >
                     Cerca
                   </button>
                 </div>
               </div>
 
-              {/* Sample Quick Barcodes */}
+              {/* Sample quick barcodes */}
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-600 block mb-2">
-                  Codici di prova rapidi (prodotti italiani autentici)
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 block mb-1.5">
+                  Prodotti italiani di prova
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   {Object.entries(BARCODE_CATALOG).map(([code, item]) => (
                     <button
                       key={code}
                       onClick={() => handleLookupBarcode(code)}
-                      className={`p-2.5 rounded-xl border text-left transition-all flex items-center justify-between ${
+                      className={`p-2 rounded-xl border text-left transition-all flex items-center justify-between ${
                         barcodeInput === code
-                          ? 'bg-sage-50 border-sage-500 text-sage-900 font-semibold'
+                          ? 'bg-sage-50 border-sage-400 text-sage-900 font-bold'
                           : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
                       }`}
                     >
                       <div className="truncate mr-2">
-                        <p className="font-bold truncate">{item.name}</p>
-                        <p className="text-[10px] text-stone-600 font-mono">{code}</p>
+                        <p className="font-bold truncate text-xs">{item.name}</p>
+                        <p className="text-[9px] text-stone-600 font-mono">{code}</p>
                       </div>
-                      <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-[9px] bg-warm-50 text-stone-600 px-1.5 py-0.2 rounded shrink-0">
                         {item.quantity} {item.unit}
                       </span>
                     </button>
@@ -370,24 +364,23 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
                 </div>
               </div>
 
-              {/* Product Match Card */}
+              {/* Scanned product */}
               {scannedProduct && (
-                <div className="p-4 bg-sage-50/70 border border-sage-200 rounded-xl flex items-center justify-between animate-fade-in">
+                <div className="p-3.5 bg-sage-50/80 border border-sage-200 rounded-xl flex items-center justify-between animate-fade-in">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-sage-700 tracking-wider">
-                      Prodotto Riconosciuto
+                    <span className="text-[9px] uppercase font-bold text-sage-700 tracking-wider">
+                      Prodotto Trovato
                     </span>
-                    <h4 className="font-bold text-stone-900 text-sm mt-0.5">{scannedProduct.name}</h4>
-                    <p className="text-xs text-stone-600 font-medium">
-                      {scannedProduct.quantity} {scannedProduct.unit} • {scannedProduct.caloriesPer100g} kcal/100g •{' '}
-                      {scannedProduct.proteinPer100g}g prot • Stima: €{scannedProduct.estimatedPrice}
+                    <h4 className="font-bold text-stone-900 text-xs mt-0.5">{scannedProduct.name}</h4>
+                    <p className="text-[10px] text-stone-600 font-medium">
+                      {scannedProduct.quantity} {scannedProduct.unit} • €{scannedProduct.estimatedPrice}
                     </p>
                   </div>
                   <button
                     onClick={handleAddScanned}
-                    className="px-4 py-2 bg-sage-600 hover:bg-sage-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center space-x-1.5"
+                    className="px-3.5 py-1.5 bg-sage-500 hover:bg-sage-600 text-white rounded-xl text-xs font-bold shadow-soft-xs transition-all flex items-center space-x-1"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>Aggiungi</span>
                   </button>
                 </div>
@@ -397,10 +390,10 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
         </div>
 
         {/* Footer actions */}
-        <div className="p-4 border-t border-stone-100 bg-stone-50/60 flex items-center justify-between">
+        <div className="p-3.5 border-t border-stone-100 bg-warm-50/50 flex items-center justify-between">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-stone-600 hover:text-stone-800 hover:bg-stone-100 rounded-xl transition-colors"
+            className="px-3.5 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 rounded-xl transition-colors"
           >
             Annulla
           </button>
@@ -409,10 +402,10 @@ export const SmartAddModal: React.FC<SmartAddModalProps> = ({ isOpen, onClose })
             <button
               onClick={handleConfirmBatch}
               disabled={parsedItems.length === 0}
-              className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-sage-600 hover:bg-sage-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm shadow-sage-200 transition-all active:scale-95"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-sage-500 hover:bg-sage-600 disabled:opacity-50 text-white text-xs font-bold shadow-soft-sm transition-all active:scale-95"
             >
-              <Check className="w-4 h-4 stroke-[2.5]" />
-              <span>Conferma e Inserisci ({parsedItems.length} alimenti)</span>
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>Conferma ({parsedItems.length} alimenti)</span>
             </button>
           )}
         </div>

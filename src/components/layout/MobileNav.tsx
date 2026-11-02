@@ -22,16 +22,16 @@ export const MobileNav: React.FC = () => {
   const itemsToBuyCount = groceryItems.filter(i => !i.checked).length;
 
   const tabs: Array<{ id: AppView; label: string; icon: React.ReactNode; badge?: number }> = [
-    { id: 'overview', label: 'Home', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: 'pantry', label: 'Dispensa', icon: <Refrigerator className="w-5 h-5" />, badge: expiringCount || undefined },
-    { id: 'recipes', label: 'Ricette', icon: <UtensilsCrossed className="w-5 h-5" /> },
-    { id: 'mealplanner', label: 'Planner', icon: <CalendarDays className="w-5 h-5" /> },
-    { id: 'grocery', label: 'Spesa', icon: <ShoppingCart className="w-5 h-5" />, badge: itemsToBuyCount || undefined },
-    { id: 'profile', label: 'Profilo', icon: <UserCheck className="w-5 h-5" /> },
+    { id: 'overview', label: 'Home', icon: <LayoutDashboard className="w-[18px] h-[18px] stroke-[1.8]" /> },
+    { id: 'pantry', label: 'Dispensa', icon: <Refrigerator className="w-[18px] h-[18px] stroke-[1.8]" />, badge: expiringCount || undefined },
+    { id: 'recipes', label: 'Ricette', icon: <UtensilsCrossed className="w-[18px] h-[18px] stroke-[1.8]" /> },
+    { id: 'mealplanner', label: 'Planner', icon: <CalendarDays className="w-[18px] h-[18px] stroke-[1.8]" /> },
+    { id: 'grocery', label: 'Spesa', icon: <ShoppingCart className="w-[18px] h-[18px] stroke-[1.8]" />, badge: itemsToBuyCount || undefined },
+    { id: 'profile', label: 'Profilo', icon: <UserCheck className="w-[18px] h-[18px] stroke-[1.8]" /> },
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200 px-2 py-1.5 z-30 flex justify-around items-center">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-200/60 px-2 py-1.5 z-30 flex justify-around items-center shadow-soft-sm">
       {tabs.map(tab => {
         const isActive = activeView === tab.id;
         return (
@@ -39,13 +39,13 @@ export const MobileNav: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveView(tab.id)}
             className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
-              isActive ? 'text-sage-700 font-bold' : 'text-stone-600 hover:text-stone-900'
+              isActive ? 'text-sage-800 font-bold' : 'text-stone-600 hover:text-stone-900'
             }`}
           >
             <div className="relative">
               {tab.icon}
               {tab.badge !== undefined && (
-                <span className="absolute -top-1 -right-2 bg-amber-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-2 bg-amber-500 text-white text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}

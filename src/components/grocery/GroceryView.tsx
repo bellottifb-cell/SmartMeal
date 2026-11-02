@@ -1,34 +1,27 @@
 import React, { useState } from 'react';
 import {
   ShoppingCart,
-  Check,
   Plus,
   Trash2,
   Copy,
   Download,
-  Sparkles,
-  ArrowRight,
-  Refrigerator,
   Euro,
   Tag,
   PackageCheck,
   CheckCircle2,
-  Share2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useApp } from '../../context/AppContext';
-import { FoodCategory, UnitType, GroceryItem } from '../../types';
+import { UnitType, GroceryItem } from '../../types';
 
 export const GroceryView: React.FC = () => {
   const {
     groceryItems,
     toggleGroceryItemChecked,
-    updateGroceryItem,
     deleteGroceryItem,
     addManualGroceryItem,
     transferCheckedGroceryToPantry,
     settings,
-    pantryItems,
   } = useApp();
 
   const [newItemName, setNewItemName] = useState('');
@@ -36,10 +29,8 @@ export const GroceryView: React.FC = () => {
   const [newItemUnit, setNewItemUnit] = useState<UnitType>('pz');
   const [copiedNotification, setCopiedNotification] = useState(false);
 
-  // Totali
   const totalCost = groceryItems.reduce((acc, item) => acc + (item.checked ? 0 : item.estimatedPrice), 0);
   const checkedCount = groceryItems.filter(i => i.checked).length;
-  const pendingCount = groceryItems.filter(i => !i.checked).length;
 
   const handleAddManual = (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,20 +85,19 @@ export const GroceryView: React.FC = () => {
     downloadAnchor.remove();
   };
 
-  // Raggruppamento per reparto del supermercato
   function groupByCategory(items: GroceryItem[]): Record<string, GroceryItem[]> {
     const groups: Record<string, GroceryItem[]> = {};
 
     const categoryNames: Record<string, string> = {
-      carne: 'Reparto Macelleria (Carne)',
-      pesce: 'Reparto Pescheria (Pesce)',
-      verdure: 'Reparto Ortofrutta (Verdure)',
-      frutta: 'Reparto Ortofrutta (Frutta)',
+      carne: 'Macelleria (Carne)',
+      pesce: 'Pescheria (Pesce)',
+      verdure: 'Ortofrutta (Verdure)',
+      frutta: 'Ortofrutta (Frutta)',
       latticini: 'Latticini & Formaggi',
       uova: 'Uova Fresche',
       cereali_pasta: 'Pasta, Riso & Cereali',
       legumi: 'Legumi & Conserve',
-      condimenti: 'Olio, Spezie & Condimenti',
+      condimenti: 'Olio & Condimenti',
       pane_prodotti_forno: 'Pane & Forno',
       altro: 'Altri Articoli',
     };
@@ -124,18 +114,18 @@ export const GroceryView: React.FC = () => {
   const groupedGrocery = groupByCategory(groceryItems);
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Top Banner with Core Rule Explanation */}
-      <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div className="space-y-5 max-w-7xl mx-auto pb-12">
+      {/* Top Banner */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/60 shadow-soft-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
         <div>
           <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-bold text-stone-900">Lista della Spesa Intelligente</h3>
-            <span className="text-[11px] font-bold text-sage-800 bg-sage-100 px-2 py-0.5 rounded-full">
-              Sottrazione Automatica Attiva
+            <h3 className="text-base sm:text-lg font-bold text-stone-900">Lista della Spesa Ottimizzata</h3>
+            <span className="text-[10px] font-bold text-sage-800 bg-sage-50 border border-sage-200/60 px-2 py-0.5 rounded-full">
+              Formula Anti-Spreco Attiva
             </span>
           </div>
           <p className="text-xs text-stone-600 font-medium mt-0.5">
-            Formula applicata: <code>Quantità = max(0, necessaria - disponibile)</code>. Mostra solo ciò che ti manca davvero!
+            Sottrae automaticamente gli alimenti che possiedi già in frigorifero e dispensa.
           </p>
         </div>
 
@@ -143,74 +133,74 @@ export const GroceryView: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleCopyToClipboard}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all"
-            title="Copia per WhatsApp / Note"
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-warm-50 hover:bg-warm-100 text-stone-800 text-xs font-bold rounded-xl border border-stone-200/70 transition-all shadow-soft-xs"
+            title="Copia per WhatsApp"
           >
-            <Copy className="w-4 h-4" />
+            <Copy className="w-3.5 h-3.5 text-stone-600" />
             <span>{copiedNotification ? 'Copiato!' : 'Copia Testo'}</span>
           </button>
 
           <button
             onClick={handleExportJson}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all"
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-warm-50 hover:bg-warm-100 text-stone-800 text-xs font-bold rounded-xl border border-stone-200/70 transition-all shadow-soft-xs"
             title="Esporta JSON"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5 text-stone-600" />
             <span>Esporta JSON</span>
           </button>
 
           {checkedCount > 0 && (
             <button
               onClick={handleTransferChecked}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-sage-600 hover:bg-sage-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-sage-200 transition-all active:scale-95"
+              className="flex items-center space-x-1.5 px-3.5 py-1.5 bg-sage-500 hover:bg-sage-600 text-white text-xs font-bold rounded-xl shadow-soft-sm transition-all active:scale-95"
             >
-              <PackageCheck className="w-4 h-4 stroke-[2.2]" />
-              <span>Aggiungi {checkedCount} acquistati a Frigo/Dispensa</span>
+              <PackageCheck className="w-3.5 h-3.5 stroke-[2.2]" />
+              <span>Aggiungi {checkedCount} a Frigo/Dispensa</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Budget & Items Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Budget & Items Summary Cards with Soft Palette */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {/* Cost estimate */}
-        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-sm flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 shadow-soft-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase text-stone-600">Costo Totale Stimato</span>
-            <p className="text-2xl font-black text-stone-900 mt-1">€{totalCost.toFixed(2)}</p>
+            <span className="text-[10px] font-bold uppercase text-stone-600 tracking-wider">Costo Stimato</span>
+            <p className="text-xl font-black text-stone-900 mt-1">€{totalCost.toFixed(2)}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-sage-50 text-sage-700 flex items-center justify-center">
-            <Euro className="w-5 h-5 text-sage-600" />
+          <div className="w-9 h-9 rounded-xl bg-sage-50 text-sage-700 border border-sage-200/50 flex items-center justify-center">
+            <Euro className="w-4 h-4 text-sage-600" />
           </div>
         </div>
 
         {/* Budget Comparison */}
-        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-sm flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 shadow-soft-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase text-stone-600">Budget Settimanale</span>
-            <p className="text-2xl font-black text-stone-900 mt-1">
+            <span className="text-[10px] font-bold uppercase text-stone-600 tracking-wider">Budget Settimanale</span>
+            <p className="text-xl font-black text-stone-900 mt-1">
               €{settings.weeklyBudgetEur}{' '}
-              <span className="text-xs font-semibold text-stone-600">
-                ({totalCost <= settings.weeklyBudgetEur ? 'Entro il budget' : 'Sopra il budget'})
+              <span className="text-[10px] font-bold text-sage-700 bg-sage-50 border border-sage-200/50 px-1.5 py-0.2 rounded-full">
+                {totalCost <= settings.weeklyBudgetEur ? 'Entro budget' : 'Sopra budget'}
               </span>
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center">
-            <Tag className="w-5 h-5 text-stone-600" />
+          <div className="w-9 h-9 rounded-xl bg-warm-50 text-stone-700 border border-stone-200/60 flex items-center justify-center">
+            <Tag className="w-4 h-4 text-stone-600" />
           </div>
         </div>
 
-        {/* Progress pill */}
-        <div className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-sm flex items-center justify-between">
+        {/* Cart items */}
+        <div className="p-4 rounded-2xl bg-white border border-stone-200/60 shadow-soft-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase text-stone-600">Articoli Carrello</span>
-            <p className="text-2xl font-black text-stone-900 mt-1">
+            <span className="text-[10px] font-bold uppercase text-stone-600 tracking-wider">Carrello</span>
+            <p className="text-xl font-black text-stone-900 mt-1">
               {checkedCount} / {groceryItems.length}{' '}
               <span className="text-xs font-semibold text-stone-600">acquistati</span>
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <ShoppingCart className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-pastel-blue-bg text-pastel-blue-text border border-pastel-blue-border/70 flex items-center justify-center">
+            <ShoppingCart className="w-4 h-4" />
           </div>
         </div>
       </div>
@@ -218,9 +208,9 @@ export const GroceryView: React.FC = () => {
       {/* Manual Quick Add Form */}
       <form
         onSubmit={handleAddManual}
-        className="p-4 rounded-2xl bg-white border border-stone-200/80 shadow-sm flex flex-wrap sm:flex-nowrap items-center gap-3"
+        className="p-3.5 rounded-2xl bg-white border border-stone-200/60 shadow-soft-xs flex flex-wrap sm:flex-nowrap items-center gap-2.5"
       >
-        <span className="text-xs font-bold uppercase tracking-wider text-stone-700 shrink-0">
+        <span className="text-xs font-bold text-stone-700 shrink-0">
           Aggiungi al volo:
         </span>
         <input
@@ -228,7 +218,7 @@ export const GroceryView: React.FC = () => {
           value={newItemName}
           onChange={e => setNewItemName(e.target.value)}
           placeholder="Es: Caffè macinato, Carta forno, Limoni..."
-          className="flex-1 p-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-sage-500 font-medium"
+          className="flex-1 p-2 text-xs bg-warm-50/50 border border-stone-200/70 rounded-xl focus:outline-none focus:border-sage-500 font-medium"
         />
         <input
           type="number"
@@ -236,12 +226,12 @@ export const GroceryView: React.FC = () => {
           step="any"
           value={newItemQty}
           onChange={e => setNewItemQty(parseFloat(e.target.value) || 1)}
-          className="w-16 p-2 text-xs text-center bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-sage-500 font-bold"
+          className="w-16 p-2 text-xs text-center bg-warm-50/50 border border-stone-200/70 rounded-xl focus:outline-none focus:border-sage-500 font-bold"
         />
         <select
           value={newItemUnit}
           onChange={e => setNewItemUnit(e.target.value as UnitType)}
-          className="p-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-sage-500 font-semibold"
+          className="p-2 text-xs bg-warm-50/50 border border-stone-200/70 rounded-xl focus:outline-none focus:border-sage-500 font-semibold"
         >
           <option value="pz">pz</option>
           <option value="g">g</option>
@@ -251,31 +241,31 @@ export const GroceryView: React.FC = () => {
         </select>
         <button
           type="submit"
-          className="px-4 py-2 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shrink-0 flex items-center space-x-1"
+          className="px-3.5 py-2 bg-stone-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shrink-0 flex items-center space-x-1"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Aggiungi</span>
         </button>
       </form>
 
-      {/* Grocery Items List Grouped by Aisle */}
+      {/* Grocery Items List Grouped by Supermarket Aisle */}
       {groceryItems.length === 0 ? (
-        <div className="p-12 text-center bg-white rounded-2xl border border-dashed border-stone-200">
-          <CheckCircle2 className="w-10 h-10 text-sage-600 mx-auto mb-2" />
-          <h4 className="font-bold text-stone-800 text-sm">Nessun ingrediente da comprare!</h4>
-          <p className="text-xs text-stone-600 font-medium mt-1">
+        <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-stone-200">
+          <CheckCircle2 className="w-8 h-8 text-sage-600 mx-auto mb-1.5" />
+          <h4 className="font-bold text-stone-800 text-xs sm:text-sm">Nessun ingrediente da acquistare!</h4>
+          <p className="text-[11px] text-stone-600 font-medium mt-0.5">
             Il tuo frigorifero e la tua dispensa contengono già tutto il necessario per i pasti pianificati.
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {Object.entries(groupedGrocery).map(([categoryName, items]) => (
-            <div key={categoryName} className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
-              <div className="p-3.5 bg-stone-50/80 border-b border-stone-100 flex items-center justify-between">
-                <h4 className="font-bold text-stone-900 text-xs sm:text-sm uppercase tracking-wider">
+            <div key={categoryName} className="bg-white rounded-2xl border border-stone-200/60 shadow-soft-xs overflow-hidden">
+              <div className="px-4 py-2.5 bg-warm-50/70 border-b border-stone-100 flex items-center justify-between">
+                <h4 className="font-bold text-stone-900 text-xs uppercase tracking-wider">
                   {categoryName}
                 </h4>
-                <span className="text-[11px] font-semibold text-stone-600">
+                <span className="text-[10px] font-semibold text-stone-600">
                   {items.length} {items.length === 1 ? 'articolo' : 'articoli'}
                 </span>
               </div>
@@ -284,8 +274,8 @@ export const GroceryView: React.FC = () => {
                 {items.map(item => (
                   <div
                     key={item.id}
-                    className={`p-3.5 flex items-center justify-between gap-3 text-xs transition-colors ${
-                      item.checked ? 'bg-stone-50/60 text-stone-400' : 'hover:bg-stone-50/40 text-stone-800'
+                    className={`px-4 py-3 flex items-center justify-between gap-3 text-xs transition-colors ${
+                      item.checked ? 'bg-warm-50/40 text-stone-400' : 'hover:bg-warm-50/30 text-stone-800'
                     }`}
                   >
                     {/* Checkbox and Name */}
@@ -294,10 +284,10 @@ export const GroceryView: React.FC = () => {
                         type="checkbox"
                         checked={item.checked}
                         onChange={() => toggleGroceryItemChecked(item.id)}
-                        className="w-4 h-4 rounded text-sage-600 focus:ring-sage-500 border-stone-300 rounded cursor-pointer"
+                        className="w-4 h-4 rounded text-sage-600 focus:ring-sage-500 border-stone-300 cursor-pointer"
                       />
                       <div className="truncate">
-                        <span className={`font-bold ${item.checked ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+                        <span className={`font-semibold ${item.checked ? 'line-through text-stone-400' : 'text-stone-900'}`}>
                           {item.name}
                         </span>
                         {item.recipeSource && item.recipeSource.length > 0 && (
@@ -308,27 +298,27 @@ export const GroceryView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Needed vs Available badge */}
+                    {/* Stock status pill */}
                     {item.availableAmount > 0 && (
-                      <span className="hidden sm:inline-block text-[10px] bg-stone-100 text-stone-600 px-2 py-0.5 rounded font-mono">
-                        Richiesti: {item.requiredAmount} - Hai: {item.availableAmount}
+                      <span className="hidden sm:inline-block text-[10px] bg-warm-50 border border-stone-200/60 text-stone-600 px-2 py-0.2 rounded-full font-mono">
+                        Serve: {item.requiredAmount} - Hai: {item.availableAmount}
                       </span>
                     )}
 
                     {/* Quantity to buy */}
                     <div className="flex items-center space-x-2">
-                      <span className="font-black text-xs text-stone-900">
+                      <span className="font-bold text-xs text-stone-900">
                         {item.amountToBuy} {item.unit}
                       </span>
-                      <span className="text-stone-600 font-semibold text-[11px]">
+                      <span className="text-stone-600 font-medium text-[11px]">
                         (~€{item.estimatedPrice.toFixed(2)})
                       </span>
                     </div>
 
-                    {/* Delete button */}
+                    {/* Delete */}
                     <button
                       onClick={() => deleteGroceryItem(item.id)}
-                      className="p-1 text-stone-600 hover:text-red-500 rounded transition-colors"
+                      className="p-1 text-stone-300 hover:text-red-500 rounded transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
